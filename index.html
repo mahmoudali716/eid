@@ -4,32 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eid-Adha Mubarak | Mickoz</title>
-    
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
-    
+
     <style>
         body {
-            background-color: #030114; 
+            background-color: #030114;
             color: #ffd700;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         #mycanvas {
-            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 850px; /* الحفاظ على أبعاد الرسمة */
+        }
+        #mycanvas canvas {
+            max-width: 95%;
+            height: auto !important; /* تصغير تلقائي على التليفون */
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-            background-color: #030114;
-            max-width: 100%; 
-            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
         }
         .play-btn {
             background: linear-gradient(45deg, #ff0055, #ffd700);
@@ -42,27 +48,26 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             transition: transform 0.2s;
-            margin-bottom: 20px;
             z-index: 10;
         }
-        .play-btn:active {
-            transform: scale(0.95);
-        }
-        #ui-container {
-            position: absolute;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .play-btn:active { transform: scale(0.95); }
+        #ui-container { position: absolute; z-index: 100; }
+        #loading {
+            display: none;
+            color: #fff;
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
     <div id="ui-container">
-        <button class="play-btn" id="startBtn" onclick="runAnimation()">▶ تشغيل العرض والأغنية</button>
+        <button class="play-btn" id="startBtn" onclick="runAnimation()">▶ تشغيل العرض</button>
+        <div id="loading">جاري معالجة الرسمة... برجاء الانتظار ثواني ⏳</div>
     </div>
-    
+
     <audio id="bgMusic" loop>
         <source src="song.mp3" type="audio/mpeg">
     </audio>
@@ -71,22 +76,20 @@
 
     <textarea id="pythonCode" style="display:none;">
 import turtle
-import math
 import random
 
 screen = turtle.Screen()
-screen.bgcolor("#030114") 
-screen.setup(width=850, height=850)
+screen.bgcolor("#030114")
+screen.tracer(0) # تفعيل الرسم الفوري بدون انتظار
 
 bg_t = turtle.Turtle()
 bg_t.hideturtle()
-bg_t.speed(0)
 bg_t.penup()
 
-for _ in range(100):
-    bg_t.goto(random.randint(-400, 400), random.randint(-150, 400))
+for _ in range(80):
+    bg_t.goto(random.randint(-400, 400), random.randint(-200, 400))
     bg_t.color(random.choice(["#ffffff", "#fff5e6", "#ffd700"]))
-    bg_t.dot(random.uniform(1, 2.5))
+    bg_t.dot(random.randint(1, 3))
 
 def draw_decorations():
     bg_t.pensize(2)
@@ -129,7 +132,6 @@ draw_decorations()
 
 sheep_t = turtle.Turtle()
 sheep_t.hideturtle()
-sheep_t.speed(0)
 
 def draw_complete_sheep(cx, cy, s):
     t = sheep_t
@@ -142,7 +144,6 @@ def draw_complete_sheep(cx, cy, s):
         t.color("#3a3a3a")
         t.begin_fill()
         t.setheading(0)
-
         for _ in range(2):
             t.forward(16*s)
             t.right(90)
@@ -153,7 +154,6 @@ def draw_complete_sheep(cx, cy, s):
         t.goto(cx + x*s - 2*s, cy - 140*s)
         t.color("#111111")
         t.begin_fill()
-
         for _ in range(2):
             t.forward(20*s)
             t.right(90)
@@ -248,36 +248,18 @@ draw_complete_sheep(-40, -140, 1.1)
 
 text_t = turtle.Turtle()
 text_t.hideturtle()
-text_t.speed(0)
 text_t.penup()
 
-def draw_final_fixed_text():
-    for pos, txt, size in [((0, 110), "Eid-Adha", 45), ((0, 30), "Mubarak", 50)]:
-        text_t.goto(pos[0]+3, pos[1]-3)
-        text_t.color("#000000")
-        text_t.write(txt, align="center", font=("Arial", size, "bold"))
-        text_t.goto(pos)
-        text_t.color("#ffd700") 
-        text_t.write(txt, align="center", font=("Arial", size, "bold"))
+for pos, txt, size in [((0, 110), "Eid-Adha", 45), ((0, 30), "Mubarak", 50)]:
+    text_t.goto(pos[0]+3, pos[1]-3)
+    text_t.color("#000000")
+    text_t.write(txt, align="center", font=("Arial", size, "bold"))
+    text_t.goto(pos)
+    text_t.color("#ffd700") 
+    text_t.write(txt, align="center", font=("Arial", size, "bold"))
 
-draw_final_fixed_text()
-
-sparkle_t = turtle.Turtle()
-sparkle_t.hideturtle()
-sparkle_t.speed(0)
-
-# تم تغيير الحلقة اللانهائية بحلقة محددة لمنع تجميد المتصفح
-for _ in range(30):
-    sx = random.randint(-280, 280)
-    sy = random.randint(140, 260)
-    sparkle_t.penup()
-    sparkle_t.goto(sx, sy)
-    sparkle_t.color(random.choice(["#ffffff", "#ffd700", "#00ffcc"]))
-    for _ in range(4):
-        sparkle_t.pendown()
-        sparkle_t.forward(10)
-        sparkle_t.backward(10)
-        sparkle_t.right(90)
+# إظهار الرسمة دفعة واحدة في جزء من الثانية
+screen.update()
     </textarea>
 
     <script>
@@ -288,8 +270,17 @@ for _ in range(30):
         }
 
         function runAnimation() {
-            document.getElementById('ui-container').style.display = 'none';
-            document.getElementById('bgMusic').play();
+            // إخفاء الزر وإظهار نص الانتظار
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // تشغيل الصوت
+            let audio = document.getElementById('bgMusic');
+            audio.volume = 1.0;
+            let playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.log("Audio Error:", error));
+            }
 
             var prog = document.getElementById("pythonCode").value;
             Sk.pre = "output";
@@ -299,17 +290,22 @@ for _ in range(30):
                 __future__: Sk.python3
             });
             
-            (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+            // ★ السر هنا: إجبار مكتبة الرسم على فتح مساحة 850x850 ★
+            Sk.TurtleGraphics = {
+                target: 'mycanvas',
+                width: 850,
+                height: 850
+            };
             
             var myPromise = Sk.misceval.asyncToPromise(function() {
                 return Sk.importMainWithBody("<stdin>", false, prog, true);
             });
             
             myPromise.then(function(mod) {
-                console.log('Execution Complete.');
+                // لما الكود يخلص إخفي كلمة "جاري المعالجة"
+                document.getElementById('ui-container').style.display = 'none';
             }, function(err) {
-                console.error(err.toString());
-                alert("حدث خطأ في الكود: " + err.toString());
+                document.getElementById('loading').innerHTML = "<span style='color:red;'>حدث خطأ: " + err.toString() + "</span>";
             });
         }
     </script>
