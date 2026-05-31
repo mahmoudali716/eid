@@ -2,57 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eid-Adha Mubarak | Mickoz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>عيد أضحى مبارك</title>
     <style>
+        * { box-sizing: border-box; }
         body {
-            background-color: #030114;
             margin: 0;
+            padding: 0;
+            background-color: #030114;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             overflow: hidden;
         }
-        #canvas-container {
-            position: relative;
-            width: 100%;
-            max-width: 850px;
+        /* شاشة البداية لتشغيل الصوت */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #030114;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-        canvas {
-            width: 95%;
-            height: auto;
-            background-color: #030114;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
-            display: none; /* مخفي حتى يتم الضغط على تشغيل */
+            z-index: 999;
+            transition: opacity 0.5s ease;
         }
         .play-btn {
             background: linear-gradient(45deg, #ff0055, #ffd700);
             color: #fff;
             border: none;
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: 18px 50px;
+            font-size: 24px;
             font-weight: bold;
-            border-radius: 30px;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
             transition: transform 0.2s;
-            position: absolute;
-            z-index: 10;
         }
         .play-btn:active { transform: scale(0.95); }
+        
+        /* حاوية الرسمة تتكيف مع حجم الموبايل */
+        #canvas-container {
+            width: 95vw;
+            max-width: 850px;
+            margin: 0 auto;
+            opacity: 0; /* مخفي حتى يتم الضغط */
+            transition: opacity 1s ease;
+        }
+        canvas {
+            width: 100%;
+            height: auto; 
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.15);
+            background-color: #030114;
+        }
     </style>
 </head>
 <body>
+    
+    <div id="overlay">
+        <h2 style="color: #ffd700; margin-bottom: 30px;">جاهز للاحتفال؟ 🐑</h2>
+        <button class="play-btn" id="startBtn">▶ تشغيل</button>
+    </div>
 
     <div id="canvas-container">
-        <button class="play-btn" id="startBtn">▶ تشغيل العرض</button>
         <canvas id="eidCanvas" width="850" height="850"></canvas>
     </div>
 
@@ -61,163 +76,137 @@
     </audio>
 
     <script>
-        const canvas = document.getElementById('eidCanvas');
-        const ctx = canvas.getContext('2d');
-        const btn = document.getElementById('startBtn');
-        const audio = document.getElementById('bgMusic');
-
-        // بمجرد الضغط، يختفي الزر، وتظهر الرسمة، وتعمل الموسيقى
-        btn.addEventListener('click', () => {
-            btn.style.display = 'none';
-            canvas.style.display = 'block';
+        document.getElementById('startBtn').addEventListener('click', function() {
+            // 1. تشغيل الأغنية
+            var audio = document.getElementById('bgMusic');
             audio.volume = 1.0;
-            audio.play().catch(e => console.log("Audio play blocked by browser"));
-            drawScene();
+            audio.play();
+
+            // 2. إخفاء الزر وإظهار الرسمة بانسيابية
+            var overlay = document.getElementById('overlay');
+            var container = document.getElementById('canvas-container');
+            
+            overlay.style.opacity = '0';
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                container.style.opacity = '1';
+            }, 500);
+
+            // 3. رسم المشهد فوراً
+            drawNativeScene();
         });
 
-        // دالة تحويل منطق Turtle إلى JavaScript Canvas
-        function drawScene() {
-            // رسم الخلفية
+        // دالة تحويل إحداثيات بايثون إلى الويب
+        function drawNativeScene() {
+            var canvas = document.getElementById('eidCanvas');
+            var ctx = canvas.getContext('2d');
+
             ctx.fillStyle = '#030114';
             ctx.fillRect(0, 0, 850, 850);
 
-            // تعديل نقطة الصفر لتكون في المنتصف مثل Turtle
+            // نقل نقطة البداية للمنتصف لتعمل كأنها سلحفاة (Turtle)
             ctx.save();
             ctx.translate(425, 425);
             
-            // دالة مساعدة لرسم الدوائر
             function drawCircle(x, y, r, color) {
                 ctx.beginPath();
-                ctx.arc(x, -y, r, 0, Math.PI * 2); // -y لأن اتجاه الـ y معكوس في الويب
+                ctx.arc(x, -y, r, 0, Math.PI * 2);
                 ctx.fillStyle = color;
                 ctx.fill();
             }
 
-            // 1. رسم النجوم في الخلفية
-            const starColors = ["#ffffff", "#fff5e6", "#ffd700"];
-            for (let i = 0; i < 150; i++) {
-                let x = (Math.random() - 0.5) * 800; 
-                let y = (Math.random() - 0.5) * 550 + 125; 
-                let r = Math.random() * 1.25 + 0.5; 
+            // 1. النجوم
+            var starColors = ["#ffffff", "#fff5e6", "#ffd700"];
+            for (var i = 0; i < 150; i++) {
+                var x = (Math.random() * 800) - 400; 
+                var y = (Math.random() * 550) - 150; 
+                var r = Math.random() * 1.5 + 0.5; 
                 drawCircle(x, y, r, starColors[Math.floor(Math.random() * starColors.length)]);
             }
 
-            // 2. رسم خيوط الزينة
+            // 2. خيوط الزينة
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(-425, -400);
-            ctx.lineTo(-100, -320);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-425, -400); ctx.lineTo(-100, -320); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(425, -400); ctx.lineTo(100, -320); ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(425, -400);
-            ctx.lineTo(100, -320);
-            ctx.stroke();
-
-            // 3. رسم الأعلام
-            const flagColors = ["#ff0055", "#00ffcc", "#ffd700", "#ff00ff", "#00ff00"];
-            for (let i = 0; i < 7; i++) {
-                // الأعلام اليسرى
-                let x = -400 + (i * 45);
-                let y = 400 - (i * 11);
+            // 3. الأعلام
+            var flagColors = ["#ff0055", "#00ffcc", "#ffd700", "#ff00ff", "#00ff00"];
+            for (var i = 0; i < 7; i++) {
+                // يمين
+                var lx = -400 + (i * 45), ly = 400 - (i * 11);
                 ctx.fillStyle = flagColors[i % flagColors.length];
-                ctx.beginPath();
-                ctx.moveTo(x, -y);
-                ctx.lineTo(x + 30, -(y - 8));
-                ctx.lineTo(x + 15, -(y - 40));
-                ctx.fill();
-
-                // الأعلام اليمنى
-                x = 400 - (i * 45);
-                y = 400 - (i * 11);
+                ctx.beginPath(); ctx.moveTo(lx, -ly); ctx.lineTo(lx + 30, -(ly - 8)); ctx.lineTo(lx + 15, -(ly - 40)); ctx.fill();
+                // يسار
+                var rx = 400 - (i * 45), ry = 400 - (i * 11);
                 ctx.fillStyle = flagColors[i % flagColors.length];
-                ctx.beginPath();
-                ctx.moveTo(x, -y);
-                ctx.lineTo(x - 30, -(y - 8));
-                ctx.lineTo(x - 15, -(y - 40));
-                ctx.fill();
+                ctx.beginPath(); ctx.moveTo(rx, -ry); ctx.lineTo(rx - 30, -(ry - 8)); ctx.lineTo(rx - 15, -(ry - 40)); ctx.fill();
             }
 
-            // 4. رسم الخروف
-            let cx = -40, cy = -140, s = 1.1;
+            // 4. الخروف
+            var cx = -40, cy = -140, s = 1.1;
 
-            // أقدام الخروف
-            const legOffsets = [-45, -15, 15, 45];
-            for (let x of legOffsets) {
-                ctx.fillStyle = "#3a3a3a";
-                ctx.fillRect(cx + x*s, -(cy - 75*s), 16*s, 65*s); 
-                
-                ctx.fillStyle = "#111111";
-                ctx.fillRect(cx + x*s - 2*s, -(cy - 140*s), 20*s, 10*s);
+            // الأرجل
+            var legOffsets = [-45, -15, 15, 45];
+            for (var i=0; i<legOffsets.length; i++) {
+                var legX = cx + legOffsets[i]*s;
+                ctx.fillStyle = "#3a3a3a"; ctx.fillRect(legX, -(cy - 75*s), 16*s, 65*s); 
+                ctx.fillStyle = "#111111"; ctx.fillRect(legX - 2*s, -(cy - 140*s), 20*s, 10*s);
             }
 
             // صوف الجسم
-            const wool = [
+            var wool = [
                 [-70, -15, 42], [-50, 20, 45], [-15, 38, 48], [25, 35, 48],
                 [60, 15, 43], [75, -20, 40], [50, -50, 42], [10, -62, 45],
                 [-35, -55, 45], [-75, -40, 40]
             ];
-            for (let w of wool) drawCircle(cx + w[0]*s, cy + w[1]*s, w[2]*s, "#ffffff");
+            for (var i=0; i<wool.length; i++) drawCircle(cx + wool[i][0]*s, cy + wool[i][1]*s, wool[i][2]*s, "#ffffff");
 
-            // الرأس
-            let hx = cx + 95*s;
-            let hy = cy - 8*s;
+            // الرأس والأذن
+            var hx = cx + 95*s, hy = cy - 8*s;
             drawCircle(hx, hy, 42*s, "#ffd08a");
-
-            // الأذنين
-            for (let ex of [-38, 38]) {
-                drawCircle(hx + ex*s, hy + 38*s, 16*s, "#ffd08a");
-                drawCircle(hx + ex*s, hy + 40*s, 10*s, "#ff9fbc");
+            var ears = [-38, 38];
+            for(var i=0; i<ears.length; i++) {
+                drawCircle(hx + ears[i]*s, hy + 38*s, 16*s, "#ffd08a");
+                drawCircle(hx + ears[i]*s, hy + 40*s, 10*s, "#ff9fbc");
             }
 
             // صوف الرأس
-            const headWool = [[-26, 58, 16], [-8, 70, 18], [12, 70, 18], [30, 58, 16]];
-            for (let hw of headWool) drawCircle(hx + hw[0]*s, hy + hw[1]*s, hw[2]*s, "#ffffff");
+            var headWool = [[-26, 58, 16], [-8, 70, 18], [12, 70, 18], [30, 58, 16]];
+            for(var i=0; i<headWool.length; i++) drawCircle(hx + headWool[i][0]*s, hy + headWool[i][1]*s, headWool[i][2]*s, "#ffffff");
 
             // العيون
-            for (let ex of [-14, 14]) {
-                drawCircle(hx + ex*s, hy + 50*s, 8*s, "white");
-                drawCircle(hx + ex*s, hy + 50*s, 3.5*s, "black");
-                drawCircle(hx + ex*s + 2*s, hy + 53*s, 1.5*s, "white");
+            var eyes = [-14, 14];
+            for(var i=0; i<eyes.length; i++) {
+                drawCircle(hx + eyes[i]*s, hy + 50*s, 8*s, "white");
+                drawCircle(hx + eyes[i]*s, hy + 50*s, 3.5*s, "black");
+                drawCircle(hx + eyes[i]*s + 2*s, hy + 53*s, 1.5*s, "white");
             }
 
-            // الخدود
-            for (let ex of [-27, 27]) drawCircle(hx + ex*s, hy + 30*s, 8*s, "#ff9fbc");
+            // الوجه (خدود، أنف، فم)
+            drawCircle(hx - 27*s, hy + 30*s, 8*s, "#ff9fbc");
+            drawCircle(hx + 27*s, hy + 30*s, 8*s, "#ff9fbc");
+            drawCircle(hx, hy + 28*s, 3.5*s, "#111111");
 
-            // الأنف
-            drawCircle(hx, hy + 28*s, 7*s, "#111111");
+            ctx.strokeStyle = "#111111"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(hx, -(hy + 22*s)); ctx.lineTo(hx, -(hy + 8*s)); ctx.stroke();
+            ctx.beginPath(); ctx.arc(hx, -(hy + 14*s), 12*s, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
 
-            // الفم
-            ctx.strokeStyle = "#111111";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(hx, -(hy + 22*s));
-            ctx.lineTo(hx, -(hy + 8*s));
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(hx, -(hy + 14*s), 12*s, 0.1 * Math.PI, 0.9 * Math.PI);
-            ctx.stroke();
-
-            ctx.restore(); 
-
-            // 5. رسم النصوص
+            // 5. النص
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             
-            const texts = [
-                {y: 425 - 110, txt: "Eid-Adha", size: 45},
-                {y: 425 - 30, txt: "Mubarak", size: 50}
-            ];
+            // الظل الأسود
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 45px Arial"; ctx.fillText("Eid-Adha", 3, -107);
+            ctx.font = "bold 50px Arial"; ctx.fillText("Mubarak", 3, -27);
+            
+            // اللون الذهبي
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "bold 45px Arial"; ctx.fillText("Eid-Adha", 0, -110);
+            ctx.font = "bold 50px Arial"; ctx.fillText("Mubarak", 0, -30);
 
-            for (let t of texts) {
-                ctx.font = `bold ${t.size}px Arial`;
-                ctx.fillStyle = "#000000";
-                ctx.fillText(t.txt, 425 + 3, t.y + 3); 
-                ctx.fillStyle = "#ffd700";
-                ctx.fillText(t.txt, 425, t.y);
-            }
+            ctx.restore();
         }
     </script>
 </body>
