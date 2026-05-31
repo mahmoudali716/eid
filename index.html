@@ -4,38 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eid-Adha Mubarak | Mickoz</title>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
-
     <style>
         body {
             background-color: #030114;
-            color: #ffd700;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
         }
-        #mycanvas {
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 850px;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 100%;
-            max-width: 850px; /* الحفاظ على أبعاد الرسمة */
         }
-        #mycanvas canvas {
-            max-width: 95%;
-            height: auto !important; /* تصغير تلقائي على التليفون */
+        canvas {
+            width: 95%;
+            height: auto;
+            background-color: #030114;
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+            display: none; /* مخفي حتى يتم الضغط على تشغيل */
         }
         .play-btn {
             background: linear-gradient(45deg, #ff0055, #ffd700);
@@ -48,265 +43,181 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             transition: transform 0.2s;
+            position: absolute;
             z-index: 10;
         }
         .play-btn:active { transform: scale(0.95); }
-        #ui-container { position: absolute; z-index: 100; }
-        #loading {
-            display: none;
-            color: #fff;
-            font-size: 18px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
-    <div id="ui-container">
-        <button class="play-btn" id="startBtn" onclick="runAnimation()">▶ تشغيل العرض</button>
-        <div id="loading">جاري معالجة الرسمة... برجاء الانتظار ثواني ⏳</div>
+    <div id="canvas-container">
+        <button class="play-btn" id="startBtn">▶ تشغيل العرض</button>
+        <canvas id="eidCanvas" width="850" height="850"></canvas>
     </div>
 
     <audio id="bgMusic" loop>
         <source src="song.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="mycanvas"></div>
-
-    <textarea id="pythonCode" style="display:none;">
-import turtle
-import random
-
-screen = turtle.Screen()
-screen.bgcolor("#030114")
-screen.tracer(0) # تفعيل الرسم الفوري بدون انتظار
-
-bg_t = turtle.Turtle()
-bg_t.hideturtle()
-bg_t.penup()
-
-for _ in range(80):
-    bg_t.goto(random.randint(-400, 400), random.randint(-200, 400))
-    bg_t.color(random.choice(["#ffffff", "#fff5e6", "#ffd700"]))
-    bg_t.dot(random.randint(1, 3))
-
-def draw_decorations():
-    bg_t.pensize(2)
-    bg_t.color("#ffffff")
-    
-    bg_t.goto(-425, 400)
-    bg_t.pendown()
-    bg_t.goto(-100, 320)
-    bg_t.penup()
-    bg_t.goto(425, 400)
-    bg_t.pendown()
-    bg_t.goto(100, 320)
-    bg_t.penup()
-    
-    flag_colors = ["#ff0055", "#00ffcc", "#ffd700", "#ff00ff", "#00ff00"]
-    
-    for i in range(7):
-        x = -400 + (i * 45)
-        y = 400 - (i * 11)
-        bg_t.goto(x, y)
-        bg_t.color(flag_colors[i % len(flag_colors)])
-        bg_t.begin_fill()
-        bg_t.goto(x + 30, y - 8)
-        bg_t.goto(x + 15, y - 40)
-        bg_t.goto(x, y)
-        bg_t.end_fill()
-
-    for i in range(7):
-        x = 400 - (i * 45)
-        y = 400 - (i * 11)
-        bg_t.goto(x, y)
-        bg_t.color(flag_colors[i % len(flag_colors)])
-        bg_t.begin_fill()
-        bg_t.goto(x - 30, y - 8)
-        bg_t.goto(x - 15, y - 40)
-        bg_t.goto(x, y)
-        bg_t.end_fill()
-
-draw_decorations()
-
-sheep_t = turtle.Turtle()
-sheep_t.hideturtle()
-
-def draw_complete_sheep(cx, cy, s):
-    t = sheep_t
-    t.penup()
-    t.setheading(0)
-    t.pensize(1)
-
-    for x in [-45, -15, 15, 45]:
-        t.goto(cx + x*s, cy - 75*s)
-        t.color("#3a3a3a")
-        t.begin_fill()
-        t.setheading(0)
-        for _ in range(2):
-            t.forward(16*s)
-            t.right(90)
-            t.forward(65*s)
-            t.right(90)
-        t.end_fill()
-
-        t.goto(cx + x*s - 2*s, cy - 140*s)
-        t.color("#111111")
-        t.begin_fill()
-        for _ in range(2):
-            t.forward(20*s)
-            t.right(90)
-            t.forward(10*s)
-            t.right(90)
-        t.end_fill()
-
-    wool = [
-        (-70, -15, 42), (-50, 20, 45), (-15, 38, 48), (25, 35, 48),
-        (60, 15, 43), (75, -20, 40), (50, -50, 42), (10, -62, 45),
-        (-35, -55, 45), (-75, -40, 40)
-    ]
-
-    t.color("#ffffff")
-    for x, y, r in wool:
-        t.goto(cx + x*s, cy + y*s)
-        t.begin_fill()
-        t.circle(r*s)
-        t.end_fill()
-
-    hx = cx + 95*s
-    hy = cy - 8*s
-
-    t.goto(hx, hy)
-    t.color("#ffd08a")
-    t.begin_fill()
-    t.circle(42*s)
-    t.end_fill()
-
-    for ex in [-38, 38]:
-        t.goto(hx + ex*s, hy + 38*s)
-        t.color("#ffd08a")
-        t.begin_fill()
-        t.circle(16*s)
-        t.end_fill()
-
-        t.goto(hx + ex*s, hy + 40*s)
-        t.color("#ff9fbc")
-        t.begin_fill()
-        t.circle(10*s)
-        t.end_fill()
-
-    head_wool = [(-26, 58, 16), (-8, 70, 18), (12, 70, 18), (30, 58, 16)]
-    t.color("#ffffff")
-    for x, y, r in head_wool:
-        t.goto(hx + x*s, hy + y*s)
-        t.begin_fill()
-        t.circle(r*s)
-        t.end_fill()
-
-    for ex in [-14, 14]:
-        t.goto(hx + ex*s, hy + 50*s)
-        t.color("white")
-        t.dot(16*s)
-        t.goto(hx + ex*s, hy + 50*s)
-        t.color("black")
-        t.dot(7*s)
-        t.goto(hx + ex*s + 2*s, hy + 53*s)
-        t.color("white")
-        t.dot(3*s)
-
-    for ex in [-27, 27]:
-        t.goto(hx + ex*s, hy + 30*s)
-        t.color("#ff9fbc")
-        t.dot(16*s)
-
-    t.goto(hx, hy + 28*s)
-    t.color("#111111")
-    t.begin_fill()
-    t.setheading(0)
-    t.circle(7*s)
-    t.end_fill()
-
-    t.goto(hx, hy + 22*s)
-    t.color("#111111")
-    t.setheading(-90)
-    t.pendown()
-    t.pensize(2)
-    t.forward(14*s)
-    t.penup()
-
-    t.goto(hx - 16*s, hy + 14*s)
-    t.setheading(-60)
-    t.pendown()
-    t.circle(16*s, 120)
-    t.penup()
-    
-    t.pensize(1)
-    t.setheading(0)
-
-draw_complete_sheep(-40, -140, 1.1)
-
-text_t = turtle.Turtle()
-text_t.hideturtle()
-text_t.penup()
-
-for pos, txt, size in [((0, 110), "Eid-Adha", 45), ((0, 30), "Mubarak", 50)]:
-    text_t.goto(pos[0]+3, pos[1]-3)
-    text_t.color("#000000")
-    text_t.write(txt, align="center", font=("Arial", size, "bold"))
-    text_t.goto(pos)
-    text_t.color("#ffd700") 
-    text_t.write(txt, align="center", font=("Arial", size, "bold"))
-
-# إظهار الرسمة دفعة واحدة في جزء من الثانية
-screen.update()
-    </textarea>
-
     <script>
-        function builtinRead(x) {
-            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-                throw "File not found: '" + x + "'";
-            return Sk.builtinFiles["files"][x];
-        }
+        const canvas = document.getElementById('eidCanvas');
+        const ctx = canvas.getContext('2d');
+        const btn = document.getElementById('startBtn');
+        const audio = document.getElementById('bgMusic');
 
-        function runAnimation() {
-            // إخفاء الزر وإظهار نص الانتظار
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-
-            // تشغيل الصوت
-            let audio = document.getElementById('bgMusic');
+        // بمجرد الضغط، يختفي الزر، وتظهر الرسمة، وتعمل الموسيقى
+        btn.addEventListener('click', () => {
+            btn.style.display = 'none';
+            canvas.style.display = 'block';
             audio.volume = 1.0;
-            let playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => console.log("Audio Error:", error));
+            audio.play().catch(e => console.log("Audio play blocked by browser"));
+            drawScene();
+        });
+
+        // دالة تحويل منطق Turtle إلى JavaScript Canvas
+        function drawScene() {
+            // رسم الخلفية
+            ctx.fillStyle = '#030114';
+            ctx.fillRect(0, 0, 850, 850);
+
+            // تعديل نقطة الصفر لتكون في المنتصف مثل Turtle
+            ctx.save();
+            ctx.translate(425, 425);
+            
+            // دالة مساعدة لرسم الدوائر
+            function drawCircle(x, y, r, color) {
+                ctx.beginPath();
+                ctx.arc(x, -y, r, 0, Math.PI * 2); // -y لأن اتجاه الـ y معكوس في الويب
+                ctx.fillStyle = color;
+                ctx.fill();
             }
 
-            var prog = document.getElementById("pythonCode").value;
-            Sk.pre = "output";
-            Sk.configure({
-                output: function(text) { console.log(text); },
-                read: builtinRead,
-                __future__: Sk.python3
-            });
+            // 1. رسم النجوم في الخلفية
+            const starColors = ["#ffffff", "#fff5e6", "#ffd700"];
+            for (let i = 0; i < 150; i++) {
+                let x = (Math.random() - 0.5) * 800; 
+                let y = (Math.random() - 0.5) * 550 + 125; 
+                let r = Math.random() * 1.25 + 0.5; 
+                drawCircle(x, y, r, starColors[Math.floor(Math.random() * starColors.length)]);
+            }
+
+            // 2. رسم خيوط الزينة
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-425, -400);
+            ctx.lineTo(-100, -320);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(425, -400);
+            ctx.lineTo(100, -320);
+            ctx.stroke();
+
+            // 3. رسم الأعلام
+            const flagColors = ["#ff0055", "#00ffcc", "#ffd700", "#ff00ff", "#00ff00"];
+            for (let i = 0; i < 7; i++) {
+                // الأعلام اليسرى
+                let x = -400 + (i * 45);
+                let y = 400 - (i * 11);
+                ctx.fillStyle = flagColors[i % flagColors.length];
+                ctx.beginPath();
+                ctx.moveTo(x, -y);
+                ctx.lineTo(x + 30, -(y - 8));
+                ctx.lineTo(x + 15, -(y - 40));
+                ctx.fill();
+
+                // الأعلام اليمنى
+                x = 400 - (i * 45);
+                y = 400 - (i * 11);
+                ctx.fillStyle = flagColors[i % flagColors.length];
+                ctx.beginPath();
+                ctx.moveTo(x, -y);
+                ctx.lineTo(x - 30, -(y - 8));
+                ctx.lineTo(x - 15, -(y - 40));
+                ctx.fill();
+            }
+
+            // 4. رسم الخروف
+            let cx = -40, cy = -140, s = 1.1;
+
+            // أقدام الخروف
+            const legOffsets = [-45, -15, 15, 45];
+            for (let x of legOffsets) {
+                ctx.fillStyle = "#3a3a3a";
+                ctx.fillRect(cx + x*s, -(cy - 75*s), 16*s, 65*s); 
+                
+                ctx.fillStyle = "#111111";
+                ctx.fillRect(cx + x*s - 2*s, -(cy - 140*s), 20*s, 10*s);
+            }
+
+            // صوف الجسم
+            const wool = [
+                [-70, -15, 42], [-50, 20, 45], [-15, 38, 48], [25, 35, 48],
+                [60, 15, 43], [75, -20, 40], [50, -50, 42], [10, -62, 45],
+                [-35, -55, 45], [-75, -40, 40]
+            ];
+            for (let w of wool) drawCircle(cx + w[0]*s, cy + w[1]*s, w[2]*s, "#ffffff");
+
+            // الرأس
+            let hx = cx + 95*s;
+            let hy = cy - 8*s;
+            drawCircle(hx, hy, 42*s, "#ffd08a");
+
+            // الأذنين
+            for (let ex of [-38, 38]) {
+                drawCircle(hx + ex*s, hy + 38*s, 16*s, "#ffd08a");
+                drawCircle(hx + ex*s, hy + 40*s, 10*s, "#ff9fbc");
+            }
+
+            // صوف الرأس
+            const headWool = [[-26, 58, 16], [-8, 70, 18], [12, 70, 18], [30, 58, 16]];
+            for (let hw of headWool) drawCircle(hx + hw[0]*s, hy + hw[1]*s, hw[2]*s, "#ffffff");
+
+            // العيون
+            for (let ex of [-14, 14]) {
+                drawCircle(hx + ex*s, hy + 50*s, 8*s, "white");
+                drawCircle(hx + ex*s, hy + 50*s, 3.5*s, "black");
+                drawCircle(hx + ex*s + 2*s, hy + 53*s, 1.5*s, "white");
+            }
+
+            // الخدود
+            for (let ex of [-27, 27]) drawCircle(hx + ex*s, hy + 30*s, 8*s, "#ff9fbc");
+
+            // الأنف
+            drawCircle(hx, hy + 28*s, 7*s, "#111111");
+
+            // الفم
+            ctx.strokeStyle = "#111111";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(hx, -(hy + 22*s));
+            ctx.lineTo(hx, -(hy + 8*s));
+            ctx.stroke();
             
-            // ★ السر هنا: إجبار مكتبة الرسم على فتح مساحة 850x850 ★
-            Sk.TurtleGraphics = {
-                target: 'mycanvas',
-                width: 850,
-                height: 850
-            };
+            ctx.beginPath();
+            ctx.arc(hx, -(hy + 14*s), 12*s, 0.1 * Math.PI, 0.9 * Math.PI);
+            ctx.stroke();
+
+            ctx.restore(); 
+
+            // 5. رسم النصوص
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
             
-            var myPromise = Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody("<stdin>", false, prog, true);
-            });
-            
-            myPromise.then(function(mod) {
-                // لما الكود يخلص إخفي كلمة "جاري المعالجة"
-                document.getElementById('ui-container').style.display = 'none';
-            }, function(err) {
-                document.getElementById('loading').innerHTML = "<span style='color:red;'>حدث خطأ: " + err.toString() + "</span>";
-            });
+            const texts = [
+                {y: 425 - 110, txt: "Eid-Adha", size: 45},
+                {y: 425 - 30, txt: "Mubarak", size: 50}
+            ];
+
+            for (let t of texts) {
+                ctx.font = `bold ${t.size}px Arial`;
+                ctx.fillStyle = "#000000";
+                ctx.fillText(t.txt, 425 + 3, t.y + 3); 
+                ctx.fillStyle = "#ffd700";
+                ctx.fillText(t.txt, 425, t.y);
+            }
         }
     </script>
 </body>
